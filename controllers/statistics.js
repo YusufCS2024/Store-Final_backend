@@ -1,4 +1,5 @@
 const { Invoice } = require("../models/Invoice");
+const { Product } = require("../models/Product");
 async function totalSellings(req, res) {
   try {
     let profit = await Invoice.aggregate([
@@ -347,6 +348,31 @@ async function thisYearInvoices(req, res) {
   }
 }
 
+async function refundInvoice(req, res) {
+  try {
+    let invoice = await Invoice.findById(req.params.id);
+    if (!invoice) {
+      return res.status(404).json("Invoice not found");
+    }
+    //console.log(invoice);
+    let products = invoice.products;
+    for (product of products) {
+      let updateProduct = await Product.findById(product._id);
+      if(!updateProduct) {
+        continue; //
+      }
+      updateProduct.stock += product.quantity;
+      await updateProduct.save();
+    }
+    await Invoice.findByIdAndDelete(req.params.id);
+    return res.status(200).json(invoice);
+    //return res.status(200).json("Refund successful");
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json("INTERNAL SERVER ERROR");
+  }
+}
+
 module.exports = {
   totalSellings,
   todaysSellings,
@@ -361,4 +387,5 @@ module.exports = {
   thisWeekSellings,
   thisYearSellings,
   thisYearInvoices,
+  refundInvoice,
 };
