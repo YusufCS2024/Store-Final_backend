@@ -415,6 +415,21 @@ async function refundInvoice(req, res) {
   }
 }
 
+async function refundItems(req,res){
+  try {
+    let invoice = await Invoice.findById(req.params.id);
+    if (!invoice) {
+      return res.status(404).json("INTERNAL SERVER ERROR");
+    }
+    Object.assign(invoice, req.body.invoice);
+    await invoice.save();
+    return res.status(200).json("Refund successful");
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json("INTERNAL SERVER ERROR");
+  }
+}
+
 module.exports = {
   totalSellings,
   todaysSellings,
@@ -432,4 +447,5 @@ module.exports = {
   totalNet,
   totalSell,
   refundInvoice,
+  refundItems,
 };
