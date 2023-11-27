@@ -14,7 +14,8 @@ const {
   thisWeekSellings,
   thisYearSellings,
   thisYearInvoices,
-  refundInvoice,
+  totalNet,
+  totalSell,
 } = require("../controllers/statistics");
 const auth = require("../middlewares/protect");
 
@@ -29,9 +30,10 @@ router.get("/day/:date", daySellings);
 router.get("/month", thisMonthSellings);
 router.get("/week", thisWeekSellings);
 router.get("/year", thisYearSellings);
+router.get("/totalNet", totalNet);
+router.get("/totalSell", totalSell);
 router.get("/invoices/month", thisMonthInvoices);
 router.get("/invoices/week", thisWeekInvoices);
 router.get("/invoices/year", thisYearInvoices);
-router.delete("/invoices/delete/:id", refundInvoice);
 router.get("/month/:year/:month", getMonthSellings);
 module.exports = router;
