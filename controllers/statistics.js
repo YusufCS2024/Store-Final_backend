@@ -353,7 +353,9 @@ async function totalNet(req, res) {
       {
         $group: {
           _id: null,
-          total: { $sum: "$netPrice" },
+          total: {
+            $sum: { $multiply: ["$netPrice", "$stock"] },
+          },
         },
       },
     ]);
@@ -373,7 +375,9 @@ async function totalSell(req, res) {
       {
         $group: {
           _id: null,
-          total: { $sum: "$sellPrice" },
+          total: {
+            $sum: { $multiply: ["$sellPrice", "$stock"] },
+          },
         },
       },
     ]);
