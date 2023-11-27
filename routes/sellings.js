@@ -21,7 +21,7 @@ const {
 } = require("../controllers/statistics");
 const auth = require("../middlewares/protect");
 
-// router.use(auth);
+router.use(auth);
 
 router.get("/profit", totalSellings);
 router.get("/day", todaysSellings);
