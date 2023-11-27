@@ -39,5 +39,5 @@ router.get("/invoices/week", thisWeekInvoices);
 router.get("/invoices/year", thisYearInvoices);
 router.get("/month/:year/:month", getMonthSellings);
 router.delete("/invoices/delete/:id", refundInvoice);
-router.delete("/invoices/deleteItems/:id", refundItems);
+router.patch("/invoices/deleteItems/:id", refundItems);
 module.exports = router;
