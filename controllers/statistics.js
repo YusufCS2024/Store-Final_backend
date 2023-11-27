@@ -415,20 +415,44 @@ async function refundInvoice(req, res) {
   }
 }
 
-async function refundItems(req,res){
+async function refundItems(req, res) {
   try {
-    let invoice = await Invoice.findById(req.params.id);
-    if (!invoice) {
-      return res.status(404).json("INTERNAL SERVER ERROR");
+    // Find the old and new invoices
+    const oldInvoice = await Invoice.findById(req.params.id);
+    const newInvoice = req.body.invoice;
+
+    if (!oldInvoice) {
+      return res.status(404).json("Invoice not found");
     }
-    Object.assign(invoice, req.body.invoice);
-    await invoice.save();
+
+    // Iterate through products to update stock quantity
+    for (const newProduct of newInvoice.products) {
+      const oldProduct = oldInvoice.products.find(
+        (p) => p._id.toString() === newProduct._id
+      );
+
+      if (oldProduct) {
+        // Calculate the difference in quantity after refund
+        const quantityDifference = oldProduct.quantity - newProduct.quantity;
+
+        // Update the stock quantity
+        await Product.findByIdAndUpdate(newProduct._id, {
+          $inc: { stock: quantityDifference },
+        });
+      }
+    }
+
+    // Update the entire invoice
+    Object.assign(oldInvoice, newInvoice);
+    await oldInvoice.save();
+
     return res.status(200).json("Refund successful");
   } catch (error) {
-    console.log(error)
-    return res.status(500).json("INTERNAL SERVER ERROR");
+    console.log(error);
+    return res.status(500).json("Internal Server Error");
   }
 }
+
 
 module.exports = {
   totalSellings,
