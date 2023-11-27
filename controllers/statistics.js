@@ -139,7 +139,6 @@ async function thisMonthSellings(req, res) {
 
     return res.status(200).json(profit);
   } catch (error) {
-    console.log(error);
     return res.status(500).json("INTERNAL SERVER ERROR");
   }
 }
@@ -348,27 +347,41 @@ async function thisYearInvoices(req, res) {
   }
 }
 
-async function refundInvoice(req, res) {
+async function totalNet(req, res) {
   try {
-    let invoice = await Invoice.findById(req.params.id);
-    if (!invoice) {
-      return res.status(404).json("Invoice not found");
+    const total = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$netPrice" },
+        },
+      },
+    ]);
+    if (!total) {
+      return res.status(404).json("INTERNAL SERVER ERROR");
     }
-    //console.log(invoice);
-    let products = invoice.products;
-    for (product of products) {
-      let updateProduct = await Product.findById(product._id);
-      if(!updateProduct) {
-        continue; //
-      }
-      updateProduct.stock += product.quantity;
-      await updateProduct.save();
-    }
-    await Invoice.findByIdAndDelete(req.params.id);
-    return res.status(200).json(invoice);
-    //return res.status(200).json("Refund successful");
+    return res.status(200).json(total);
   } catch (error) {
     console.log(error);
+    return res.status(500).json("INTERNAL SERVER ERROR");
+  }
+}
+
+async function totalSell(req, res) {
+  try {
+    const total = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$sellPrice" },
+        },
+      },
+    ]);
+    if (!total) {
+      return res.status(404).json("INTERNAL SERVER ERROR");
+    }
+    return res.status(200).json(total);
+  } catch (error) {
     return res.status(500).json("INTERNAL SERVER ERROR");
   }
 }
@@ -387,5 +400,6 @@ module.exports = {
   thisWeekSellings,
   thisYearSellings,
   thisYearInvoices,
-  refundInvoice,
+  totalNet,
+  totalSell,
 };
