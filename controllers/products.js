@@ -27,8 +27,8 @@ async function addProduct(req, res) {
       let result = await streamUpload(req);
       product = new Product({
         labelId: req.body.labelId,
-        name: req.body.name,
-        category: req.body.category,
+        name: req.body.name.trimRight(),
+        category: req.body.category.trimRight(),
         netPrice: req.body.netPrice,
         sellPrice: req.body.sellPrice,
         stock: req.body.stock,
@@ -37,8 +37,8 @@ async function addProduct(req, res) {
     } else {
       product = new Product({
         labelId: req.body.labelId,
-        name: req.body.name,
-        category: req.body.category,
+        name: req.body.name.trimRight(),
+        category: req.body.category.trimRight(),
         netPrice: req.body.netPrice,
         sellPrice: req.body.sellPrice,
         stock: req.body.stock,
