@@ -27,6 +27,6 @@ router.get("/categories", getCategories);
 router.get("/categories/:category", getCatProd);
 router.post("/checkout", checkout);
 router.delete("/delete/:id", deleteProduct);
-router.patch("/update/:id", updateProduct);
+router.patch("/update/:id", fileUpload.single("image"),  updateProduct);
 
 module.exports = router;
