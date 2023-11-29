@@ -139,7 +139,13 @@ async function checkout(req, res) {
 
 async function deleteProduct(req, res) {
   try {
-    console.log(req.params.id);
+    let findProduct = await Product.findById(req.params.id);
+    if(!findProduct){
+      return res.status(404).json("Not found");
+    }
+    const publicId = findProduct.image.split("/").pop().split(".")[0];
+    const oldImage = await cloudinary.uploader.destroy(publicId);
+    console.log(oldImage);
     let product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json("not found");
     return res.status(200).json("deleted");
@@ -152,13 +158,41 @@ async function updateProduct(req, res) {
   try {
     let product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json("not found");
-    let updateProduct = {
-      labelId: req.body.labelId,
-      name: req.body.name,
-      netPrice: req.body.netPrice,
-      sellPrice: req.body.sellPrice,
-      stock: req.body.stock,
-    };
+    let updateProduct;
+    if (req.file) {
+      const publicId = product.image.split("/").pop().split(".")[0];
+      const oldImage = await cloudinary.uploader.destroy(publicId);
+      console.log(oldImage);
+      let streamUpload = (req) => {
+        return new Promise((resolve, reject) => {
+          let stream = cloudinary.uploader.upload_stream((error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          });
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+      };
+      let result = await streamUpload(req);
+      updateProduct = {
+        labelId: req.body.labelId,
+        name: req.body.name,
+        netPrice: req.body.netPrice,
+        sellPrice: req.body.sellPrice,
+        stock: req.body.stock,
+        image: result.secure_url,
+      };
+    } else {
+      updateProduct = {
+        labelId: req.body.labelId,
+        name: req.body.name,
+        netPrice: req.body.netPrice,
+        sellPrice: req.body.sellPrice,
+        stock: req.body.stock,
+      };
+    }
     await product.updateOne(updateProduct);
     return res.status(200).json("Updated");
   } catch (error) {
